@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-management-deployment
+  labels:
+    app: product-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-management
+  template:
+    metadata:
+      labels:
+        app: product-management
+    spec:
+      containers:
+        - name: product-management
+          image: product-management
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: db_root_password
+              valueFrom:
+                secretKeyRef:
+                  name: product-management-secrets
+                  key: db_root_password
+            - name: db_name
+              value: postgres
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-management-service
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: product-management
+  type: LoadBalancer
